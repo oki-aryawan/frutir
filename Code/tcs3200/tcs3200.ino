@@ -1,63 +1,50 @@
+#define S2 2 /*Define S2 Pin Number of ESP32*/
+#define S3 4 /*Define S3 Pin Number of ESP32*/
+#define sensorOut 18 /*Define Sensor Output Pin Number of ESP32*/
 
-
-
-// TCS 3200
-#define S0 15
-#define S1 2
-#define S2 5
-#define S3 4
-#define sensorOut 18
-int frequency = 0;
- 
-void setup()
-{
-pinMode(S0, OUTPUT);
-pinMode(S1, OUTPUT);
-pinMode(S2, OUTPUT);
-pinMode(S3, OUTPUT);
-pinMode(sensorOut, INPUT);
- 
-// Setting frequency-scaling to 20%
-digitalWrite(S0,HIGH);
-digitalWrite(S1,HIGH);
- 
-Serial.begin(9600);
+/*Define int variables*/
+void setup() {
+  pinMode(S2, OUTPUT); /*Define S2 Pin as a OUTPUT*/
+  pinMode(S3, OUTPUT); /*Define S3 Pin as a OUTPUT*/
+  pinMode(sensorOut, INPUT); /*Define Sensor Output Pin as a INPUT*/
+  Serial.begin(115200); /*Set the baudrate to 115200*/
+  Serial.print("This is TCS3200 Calibration Code");
 }
 
-void bacaWarna(){
-  
+void loop() {
+  Red = getRed();
+  delay(100); /*wait a 200mS*/
+  Green = getGreen();
+  delay(100); /*wait a 200mS*/
+  Blue = getBlue();
+  delay(100); /*wait a 200mS*/
+  Serial.print("Red Freq = ");
+  Serial.print(Red); /*Print Red Color Value on Serial Monitor*/
+  Serial.print("   ");
+  Serial.print("Green Freq = ");
+  Serial.print(Green); /*Print Green Color Value on Serial Monitor*/
+  Serial.print("   ");
+  Serial.print("Blue Freq = ");
+  Serial.println(Blue); /*Print Blue Color Value on Serial Monitor*/
 }
 
+int getRed() {
+  digitalWrite(S2,LOW);
+  digitalWrite(S3,LOW);
+  Frequency = pulseIn(sensorOut, LOW); /*Get the Red Color Frequency*/
+  return Frequency;
+}
 
-void loop()
-{
-// Setting red filtered photodiodes to be read
-digitalWrite(S2,LOW);
-digitalWrite(S3,LOW);
-// Reading the output frequency
-frequency = pulseIn(sensorOut, LOW);
-// Printing the value on the serial monitor
-Serial.print("R= ");//printing name
-Serial.print(frequency);//printing RED color frequency
-Serial.print(" ");
-delay(500);
-// Setting Green filtered photodiodes to be read
-digitalWrite(S2,HIGH);
-digitalWrite(S3,HIGH);
-// Reading the output frequency
-frequency = pulseIn(sensorOut, LOW);
-// Printing the value on the serial monitor
-Serial.print("G= ");//printing name
-Serial.print(frequency);//printing RED color frequency
-Serial.print(" ");
-delay(500);
-// Setting Blue filtered photodiodes to be read
-digitalWrite(S2,LOW);
-digitalWrite(S3,HIGH);
-// Reading the output frequency
-frequency = pulseIn(sensorOut, LOW);
-// Printing the value on the serial monitor
-Serial.print("B= ");//printing name
-Serial.print(frequency);//printing RED color frequency
-Serial.println(" ");
-delay(500);  }
+int getGreen() {
+  digitalWrite(S2,HIGH);
+  digitalWrite(S3,HIGH);
+  Frequency = pulseIn(sensorOut, LOW); /*Get the Green Color Frequency*/
+  return Frequency;
+}
+
+int getBlue() {
+  digitalWrite(S2,LOW);
+  digitalWrite(S3,HIGH);
+  Frequency = pulseIn(sensorOut, LOW); /*Get the Blue Color Frequency*/
+  return Frequency;
+}
