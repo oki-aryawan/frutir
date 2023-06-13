@@ -1,8 +1,15 @@
+// kalibrasi
+
 #define S2 2 /*Define S2 Pin Number of ESP32*/
 #define S3 4 /*Define S3 Pin Number of ESP32*/
-#define sensorOut 18 /*Define Sensor Output Pin Number of ESP32*/
+#define sensorOut 16 /*Define Sensor Output Pin Number of ESP32*/
 
 /*Define int variables*/
+int Red = 0;
+int Green = 0;
+int Blue = 0;
+int Frequency = 0;
+
 void setup() {
   pinMode(S2, OUTPUT); /*Define S2 Pin as a OUTPUT*/
   pinMode(S3, OUTPUT); /*Define S3 Pin as a OUTPUT*/
@@ -13,11 +20,11 @@ void setup() {
 
 void loop() {
   Red = getRed();
-  delay(100); /*wait a 200mS*/
+  delay(200); /*wait a 200mS*/
   Green = getGreen();
-  delay(100); /*wait a 200mS*/
+  delay(200); /*wait a 200mS*/
   Blue = getBlue();
-  delay(100); /*wait a 200mS*/
+  delay(200); /*wait a 200mS*/
   Serial.print("Red Freq = ");
   Serial.print(Red); /*Print Red Color Value on Serial Monitor*/
   Serial.print("   ");

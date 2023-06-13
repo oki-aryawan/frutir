@@ -2,15 +2,17 @@
 #include <WebServer.h>
 #include "html.h"
 WebServer server(80);  // port 80
-const char* ssid = "okinawa";
-const char* password = "1234567890";
-
+const char* ssid = "ZERLAN TEAM";
+const char* password = "tanayabot";
 //========servo=====
 #include <ESP32_Servo.h>
 
 Servo myservo;
-int pos1 = 180;  // buah tdk sesuai grade
-int pos2 = 30;   // buah normal
+int pos1 = 130;  // buah tdk sesuai grade
+int pos2 = 10;   // buah normal
+int grade = 0;
+int no_grade = 0;
+String status[] = {"  Buah  Matang  ", " Buah   Mentah  ", " Tidak Ada Buah "};
 
 //============== TCS 3200 =============
 #define S2 2
@@ -27,9 +29,7 @@ int greenMax = 113;  // Green maximum value
 int blueMin = 7;     // Blue minimum value
 int blueMax = 98;    // Blue maximum value
 
-int rv;
-int gv;
-int bv;
+int rv; int gv; int bv;
 
 //=======L298N======
 int enA = 32;
@@ -47,7 +47,7 @@ void MainPage() {
 }
 
 void Colors() {
-  String data = "[\"" + String(rv) + "\",\"" + String(gv) + "\",\"" + String(bv) + "\"]";
+  String data = "[\"" + String(rv) + "\",\"" + String(gv) + "\",\"" + String(bv) + "\", \"" + String(grade) + "\", \"" + String(no_grade) + "\"]";
   server.send(200, "text/plane", data);
 }
 
@@ -76,19 +76,34 @@ void setup() {
   pinMode(buzzer, OUTPUT);
   // Setting frequency-scaling to 20%
   myservo.attach(15);  // pin servo
-/*
-  pinMode(enA, OUTPUT);
-  pinMode(in1, OUTPUT);
-  pinMode(in2, OUTPUT);
-  
-  // Turn off motors - Initial state
-  digitalWrite(in1, LOW);
-  digitalWrite(in2, LOW);
-  
-  // Configure the timer for PWM on the enA pin
-  ledcSetup(0, 5000, 8); // Channel 0, 5000 Hz, 8-bit resolution
-  ledcAttachPin(enA, 0); // Attach enA pin to Channel 0
-*/
+  // konek wifi
+  WiFi.mode(WIFI_STA);        /*Set the WiFi in STA Mode*/
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to ");
+  lcd.setCursor(0, 0);
+  lcd.print("Connecting to ");
+  lcd.setCursor(0, 1);
+  lcd.print(ssid);
+  Serial.println(ssid);
+  delay(1000);                /*Wait for 1000mS*/
+  lcd.clear();
+  while(WiFi.status() != WL_CONNECTED)
+  {
+    Serial.print(".");
+    lcd.setCursor(0, 0);
+    lcd.print(".");
+    delay(200);
+  } /*Wait while connecting to WiFi*/
+  Serial.print("Connected to ");
+  Serial.println(ssid);
+  Serial.print("Your Local IP address is: ");
+  lcd.setCursor(0, 0);
+  lcd.print(WiFi.localIP());
+  Serial.println(WiFi.localIP());       /*Print the Local IP*/
+  server.on("/", MainPage);             /*Display the Web/HTML Page*/
+  server.on("/readColors", Colors);     /*Display the updated Distance value(CM and INCH)*/
+  server.begin();                       /*Start Server*/
+  delay(1000);                          /*Wait for 1000mS*/
 
 }
 
@@ -131,41 +146,38 @@ void bacaWarna() {
     Serial.print("B= ");
     Serial.print(bv);
     Serial.println(" ");
-    //server.handleClient();
+    server.handleClient();
     //delay(500);
-    if (rv > 160 && rv < 200) {
-      myservo.write(pos1);  // Hitam
-      lcd.clear();
-      lcd.backlight();
-      lcd.setCursor(0, 0);
-      lcd.print("Hitam, BUANG!!");
+    if (gv > 240) {
+      //lcd.clear();
+      //lcd.backlight();
+      lcd.setCursor(0, 1);
+      lcd.print(status[1]);
+      delay(500);
+      myservo.write(pos1);  // mentah hijau
+      no_grade ++;
+      delay(800);
       //delay(500);
     }
-    else if (rv > 210 && rv < 220) {
+    else if (rv > 240) {
       myservo.write(pos2);  // merah diterima
-      lcd.clear();
-      lcd.backlight();
-      lcd.setCursor(0, 0);
-      lcd.print("Merah, OKE!");
-      //delay(500);
+      //lcd.clear();
+      //lcd.backlight();
+      lcd.setCursor(0, 1);
+      lcd.print(status[0]);
+      grade ++;
+      delay(500);
     }
-    else if (rv > 235) {
-      lcd.clear();
-      lcd.backlight();
-      lcd.setCursor(0, 0);
-      lcd.print("Gak Ada");
+    else {
+      //lcd.clear();;
+      //lcd.backlight();
+      lcd.setCursor(0, 1);
+      lcd.print(status[2]);
       myservo.write(pos2);
     }
   }
 }
-void directionControl() {
-  // Set the motor speed using PWM
-  ledcWrite(0, 100); // Channel 0, 100 (duty cycle)
-  
-  // Turn on motor A & B
-  digitalWrite(in1, HIGH);
-  digitalWrite(in2, LOW);
-}
+
 
 int getRedPW() {
   // Set sensor to read Red only
@@ -195,8 +207,5 @@ int getBluePW() {
 }
 
 void loop() {
-  //eksekusi();
-  //directionControl();
   bacaWarna();
-
 }
