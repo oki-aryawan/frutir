@@ -1,1 +1,1 @@
-## Frutir: Sistem Sortasi Buah Tomat Cherry berbasis Warna dengan Fuzzy Logic
+## Frutir: "Sistem Sortasi Buah Tomat Cherry dengan Sensor TCS3200 Berbasis IoT"
